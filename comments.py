@@ -51,7 +51,8 @@ def run(page):
     current_page += 1
     next_page = data['after']
 
-    if current_page < page_limit:
+    # didn't reach the first comment page nor the page limit
+    if next_page is not None and current_page < page_limit:
         # wait for a random number of seconds to avoid get blocked
         time.sleep(random.randint(1, 5))
         run(next_page)
