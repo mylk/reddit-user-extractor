@@ -32,6 +32,9 @@ def parse_comments(data):
     print('==================================================================================================')
 
     for comment in data['children']:
+        if args.sub_filter is not None and args.sub_filter != comment['data']['subreddit']:
+            continue
+
         date_created = datetime.fromtimestamp(comment['data']['created']).strftime('%Y-%m-%d %H:%M:%S')
         print('{} ({}): {}'.format(comment['data']['id'], date_created, html.unescape(comment['data']['body'][0:100].replace('\n', '\\n'))))
 
@@ -59,6 +62,7 @@ def run(page):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--username', type=str, required=True, help='The user\'s comments to crawl')
+    parser.add_argument('-s', '--sub-filter', type=str, help='Get comments from specific sub')
     parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages')
     args = parser.parse_args()
 
