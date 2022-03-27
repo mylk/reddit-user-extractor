@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 from datetime import datetime
 import html
 import json
@@ -12,9 +13,7 @@ import time
 # convert new line
 # write to file
 
-username = 'spez'
 current_page = 0
-page_limit = 2
 
 def get_comments(page):
     headers = {
@@ -26,7 +25,7 @@ def get_comments(page):
     if page:
         params['after'] = page
 
-    response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(username), params=params, headers=headers)
+    response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(args.username), params=params, headers=headers)
     return response
 
 def parse_comments(data):
@@ -51,13 +50,18 @@ def run(page):
     current_page += 1
     next_page = data['after']
 
-    # didn't reach the first comment page nor the page limit
-    if next_page is not None and current_page < page_limit:
+    # didn't reach the first comment or the page limit (if set)
+    if next_page is not None and (args.page_limit is None or current_page < args.page_limit):
         # wait for a random number of seconds to avoid get blocked
         time.sleep(random.randint(1, 5))
         run(next_page)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--username', type=str, required=True, help='The user\'s comments to crawl')
+    parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages')
+    args = parser.parse_args()
+
     try:
         run(None)
     except json.decoder.JSONDecodeError as ex:
