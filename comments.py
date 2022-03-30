@@ -38,7 +38,7 @@ def parse_comments(data):
         date_created = datetime.fromtimestamp(comment['data']['created']).strftime('%Y-%m-%d %H:%M:%S')
         text = '{} ({}): {}'.format(comment['data']['id'], date_created, html.unescape(comment['data']['body'][0:100].replace('\n', '\\n')))
 
-        if args.file_dump:
+        if not args.dump:
             file_output.write(text + '\n')
             continue
 
@@ -70,11 +70,11 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--username', type=str, required=True, help='The user\'s comments to crawl')
     parser.add_argument('-s', '--sub-filter', type=str, help='Get comments from specific sub')
     parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages')
-    parser.add_argument('-f', '--file-dump', action='store_true', help='Dump results to file, otherwise echo')
+    parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output')
     args = parser.parse_args()
 
-    filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
-    if args.file_dump:
+    if not args.dump:
+        filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
         file_output = open(filename, 'a')
 
     try:
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         print('ERROR: Cannot decode data - {}. HTTP response: \"{}\"'.format(str(ex), response_json.text[0:70]))
         sys.exit(1)
 
-    if args.file_dump:
+    if not args.dump:
         file_output.close()
 
     sys.exit(0)
