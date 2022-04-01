@@ -29,20 +29,21 @@ def get_comments(page):
     return response
 
 def parse_comments(data):
-    print('==================================================================================================')
-
     for comment in data['children']:
-        if args.sub_filter is not None and args.sub_filter != comment['data']['subreddit']:
+        comment = comment['data']
+
+        if args.sub_filter is not None and args.sub_filter != comment['subreddit']:
             continue
 
-        date_created = datetime.fromtimestamp(comment['data']['created']).strftime('%Y-%m-%d %H:%M:%S')
-        text = '{} ({}): {}'.format(comment['data']['id'], date_created, html.unescape(comment['data']['body'][0:100].replace('\n', '\\n')))
+        date_created = datetime.fromtimestamp(comment['created']).strftime('%Y-%m-%d %H:%M:%S')
+        body = html.unescape(comment['body'][0:100].replace('\n', '\\n'))
+        result = [comment['id'], comment['link_id'], comment['link_title'], comment['subreddit'], date_created, body]
 
         if not args.dump:
-            file_output.write(text + '\n')
+            file_output.write(';'.join(result) + '\n')
             continue
 
-        print(text)
+        print(';'.join(result))
 
 def run(page):
     global current_page
