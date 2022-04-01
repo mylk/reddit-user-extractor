@@ -74,9 +74,14 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output')
     args = parser.parse_args()
 
+    csv_columns = ['comment_id', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
+
     if not args.dump:
         filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
         file_output = open(filename, 'a')
+        file_output.write(';'.join(csv_columns))
+    else:
+        print(';'.join(csv_columns))
 
     try:
         run(None)
