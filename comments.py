@@ -38,9 +38,10 @@ def parse_comments(data):
         if args.sub_filter is not None and args.sub_filter != comment['subreddit']:
             continue
 
+        post_id = comment['link_id'].split('_')[1]
         date_created = datetime.fromtimestamp(comment['created']).strftime('%Y-%m-%d %H:%M:%S')
-        body = html.unescape(comment['body'][0:100].replace('\n', '\\n'))
-        result = [comment['id'], comment['link_id'], comment['link_title'], comment['subreddit'], date_created, body]
+        body = html.unescape(comment['body'].replace('\n', '\\n'))
+        result = [comment['id'], post_id, comment['link_title'], comment['subreddit'], date_created, body]
 
         if not args.dump:
             exported_comments_count += 1
