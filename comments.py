@@ -40,10 +40,10 @@ def parse_comments(data):
         result = [comment['id'], comment['link_id'], comment['link_title'], comment['subreddit'], date_created, body]
 
         if not args.dump:
-            file_output.write(';'.join(result) + '\n')
+            file_output.write('~#~'.join(result) + '\n')
             continue
 
-        print(';'.join(result))
+        print('~#~'.join(result))
 
 def run(page):
     global current_page
@@ -79,9 +79,9 @@ if __name__ == '__main__':
     if not args.dump:
         filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
         file_output = open(filename, 'a')
-        file_output.write(';'.join(csv_columns))
+        file_output.write('~#~'.join(csv_columns))
     else:
-        print(';'.join(csv_columns))
+        print('~#~'.join(csv_columns))
 
     try:
         run(None)
