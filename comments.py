@@ -14,6 +14,7 @@ import time
 # write to file
 
 current_page = 0
+exported_comments_count = 0
 
 def get_comments(page):
     headers = {
@@ -29,6 +30,8 @@ def get_comments(page):
     return response
 
 def parse_comments(data):
+    global exported_comments_count
+
     for comment in data['children']:
         comment = comment['data']
 
@@ -40,6 +43,7 @@ def parse_comments(data):
         result = [comment['id'], comment['link_id'], comment['link_title'], comment['subreddit'], date_created, body]
 
         if not args.dump:
+            exported_comments_count += 1
             file_output.write('~#~'.join(result) + '\n')
             continue
 
@@ -91,6 +95,7 @@ if __name__ == '__main__':
 
     if not args.dump:
         file_output.close()
+        print('{} comments exported.\n{}'.format(exported_comments_count, filename))
 
     sys.exit(0)
 
