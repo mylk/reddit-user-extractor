@@ -79,7 +79,7 @@ if __name__ == '__main__':
     if not args.dump:
         filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
         file_output = open(filename, 'a')
-        file_output.write('~#~'.join(csv_columns))
+        file_output.write('~#~'.join(csv_columns) + '\n')
     else:
         print('~#~'.join(csv_columns))
 
