@@ -29,7 +29,7 @@ There is a header line but let me note the extracted fields:
 Other command options:
 
 ```
--u, --username       set the username to extract their comments (required)
+-u, --usernames      set the username(s) to extract their comments (required)
 -s, --sub-filter     filter user's comments to specific sub (optional)
 -p, --page-limit     number of pages to extract (optional)
                      it's 25 comments/page, so setting this to 1 will extact the last 25 comments

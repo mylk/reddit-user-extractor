@@ -9,14 +9,10 @@ import requests
 import sys
 import time
 
-# random sleep
-# convert new line
-# write to file
-
 current_page = 0
 exported_comments_count = 0
 
-def get_comments(page):
+def get_comments(username, page):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
         'Accept-Encoding': 'gzip'
@@ -26,7 +22,7 @@ def get_comments(page):
     if page:
         params['after'] = page
 
-    response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(args.username), params=params, headers=headers)
+    response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(username), params=params, headers=headers)
     return response
 
 def parse_comments(data):
@@ -50,10 +46,10 @@ def parse_comments(data):
 
         print('~#~'.join(result))
 
-def run(page):
+def run(username, page):
     global current_page
 
-    response_json = get_comments(page)
+    response_json = get_comments(username, page)
     response = json.loads(response_json.text)
 
     data = response['data'] if 'data' in response else None
@@ -69,34 +65,39 @@ def run(page):
     if next_page is not None and (args.page_limit is None or current_page < args.page_limit):
         # wait for a random number of seconds to avoid get blocked
         time.sleep(random.randint(1, 5))
-        run(next_page)
+        run(username, next_page)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--username', type=str, required=True, help='The user\'s comments to crawl')
-    parser.add_argument('-s', '--sub-filter', type=str, help='Get comments from specific sub')
-    parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages')
-    parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output')
+    parser.add_argument('-u', '--usernames', type=str, required=True, help='The user(s) to crawl. Separate with commas for multiple values.')
+    parser.add_argument('-s', '--sub-filter', type=str, help='Get comments from specific sub.')
+    parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages.')
+    parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
     args = parser.parse_args()
 
     csv_columns = ['comment_id', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
 
-    if not args.dump:
-        filename = '{}_{}.csv'.format(args.username, datetime.today().strftime('%Y%m%d_%H%M%S'))
-        file_output = open(filename, 'a')
-        file_output.write('~#~'.join(csv_columns) + '\n')
-    else:
-        print('~#~'.join(csv_columns))
-
     try:
-        run(None)
+        usernames = args.usernames.split(',')
+        for username in usernames:
+            if not args.dump:
+                filename = '{}_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
+                file_output = open(filename, 'a')
+                file_output.write('~#~'.join(csv_columns) + '\n')
+            else:
+                print('~#~'.join(csv_columns))
+
+            current_page = 0
+            exported_comments_count = 0
+            run(username, None)
+            time.sleep(random.randint(1, 5))
+
+            if not args.dump:
+                file_output.close()
+                print('{}: {} comments exported.'.format(filename, exported_comments_count))
     except json.decoder.JSONDecodeError as ex:
         print('ERROR: Cannot decode data - {}. HTTP response: \"{}\"'.format(str(ex), response_json.text[0:70]))
         sys.exit(1)
-
-    if not args.dump:
-        file_output.close()
-        print('{} comments exported.\n{}'.format(exported_comments_count, filename))
 
     sys.exit(0)
 
