@@ -29,11 +29,12 @@ There is a header line but let me note the extracted fields:
 Other command options:
 
 ```
--u, --usernames      set the username(s) to extract their comments (required)
--s, --sub-filter     filter user's comments to specific sub (optional)
--p, --page-limit     number of pages to extract (optional)
-                     it's 25 comments/page, so setting this to 1 will extact the last 25 comments
--d, --dump           dump to standard output, not to a CSV file. (optional)
--h, --help           show the help message and exit
+-u, --usernames        set the username(s) to extract their comments (required).
+-f, --usernames-file   a file that contains the user(s) to crawl. Each value has to be in a new line.
+-s, --sub-filter       filter user's comments to specific sub (optional).
+-p, --page-limit       number of pages to extract (optional).
+                       it's 25 comments/page, so setting this to 1 will extact the last 25 comments.
+-d, --dump             dump to standard output, not to a CSV file. (optional).
+-h, --help             show the help message and exit.
 ```
 

@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime
 import html
 import json
+import os
 import random
 import requests
 import sys
@@ -69,7 +70,8 @@ def run(username, page):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--usernames', type=str, required=True, help='The user(s) to crawl. Separate with commas for multiple values.')
+    parser.add_argument('-u', '--usernames', type=str, help='The user(s) to crawl. Separate with commas for multiple values.')
+    parser.add_argument('-f', '--usernames-file', type=str, help='A file that contains the user(s) to crawl. Each value has to be in a new line.')
     parser.add_argument('-s', '--sub-filter', type=str, help='Get comments from specific sub.')
     parser.add_argument('-p', '--page-limit', type=int, help='Limit crawling to a number of pages.')
     parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
@@ -78,7 +80,16 @@ if __name__ == '__main__':
     csv_columns = ['comment_id', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
 
     try:
-        usernames = args.usernames.split(',')
+        usernames = []
+        if args.usernames_file and os.path.isfile(args.usernames_file):
+            usernames = open(args.usernames_file, 'r').read().splitlines()
+        elif args.usernames:
+            usernames = args.usernames.split(',')
+
+        if not usernames:
+            print('Define one or more usernames using -u or -f.\nCheck the help dialog for more options.')
+            sys.exit(1)
+
         for username in usernames:
             if not args.dump:
                 filename = '{}_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
