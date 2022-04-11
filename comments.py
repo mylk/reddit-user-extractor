@@ -20,14 +20,20 @@ def get_comments(username, page):
     }
     params = {}
 
+    # set parameter to go to specific page of comments
     if page:
         params['after'] = page
 
     response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(username), params=params, headers=headers)
-    return response
+
+    try:
+        return json.loads(response.text)
+    except json.decoder.JSONDecodeError as ex:
+        print('ERROR: Cannot decode data - {}. HTTP response: \"{}\"'.format(str(ex), response.text[0:70]))
+        return []
 
 def parse_comments(data):
-    global exported_comments_count
+    comments = []
 
     for comment in data['children']:
         comment = comment['data']
@@ -35,38 +41,55 @@ def parse_comments(data):
         if args.sub_filter is not None and args.sub_filter != comment['subreddit']:
             continue
 
+        # remove the content type id
         post_id = comment['link_id'].split('_')[1]
         date_created = datetime.fromtimestamp(comment['created']).strftime('%Y-%m-%d %H:%M:%S')
         body = html.unescape(comment['body'].replace('\n', '\\n'))
-        result = [comment['id'], post_id, comment['link_title'], comment['subreddit'], date_created, body]
+        comments.append([comment['id'], post_id, comment['link_title'], comment['subreddit'], date_created, body])
 
-        if not args.dump:
-            exported_comments_count += 1
-            file_output.write('~#~'.join(result) + '\n')
-            continue
-
-        print('~#~'.join(result))
+    return comments
 
 def run(username, page):
     global current_page
+    global exported_comments_count
 
-    response_json = get_comments(username, page)
-    response = json.loads(response_json.text)
+    response = get_comments(username, page)
 
+    # exit if no comments in page
     data = response['data'] if 'data' in response else None
     if data is None:
         return
 
-    parse_comments(data)
+    comments = parse_comments(data)
+    for comment in comments:
+        if not args.dump:
+            exported_comments_count += 1
+            file_output.write('{}\n'.format('~#~'.join(comment)))
+            continue
+
+        print('~#~'.join(result))
 
     current_page += 1
     next_page = data['after']
 
     # didn't reach the first comment or the page limit (if set)
     if next_page is not None and (args.page_limit is None or current_page < args.page_limit):
-        # wait for a random number of seconds to avoid get blocked
+        # wait for a random number of seconds to avoid getting blocked
         time.sleep(random.randint(1, 5))
+        # recurse for the next page
         run(username, next_page)
+
+def get_usernames():
+    usernames = []
+
+    if args.usernames_file and os.path.isfile(args.usernames_file):
+        with open(args.usernames_file, 'r') as usernames_file:
+            usernames = usernames_file.read().splitlines()
+            usernames_file.close()
+    elif args.usernames:
+        usernames = args.usernames.split(',')
+
+    return usernames
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -79,36 +102,30 @@ if __name__ == '__main__':
 
     csv_columns = ['comment_id', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
 
-    try:
-        usernames = []
-        if args.usernames_file and os.path.isfile(args.usernames_file):
-            usernames = open(args.usernames_file, 'r').read().splitlines()
-        elif args.usernames:
-            usernames = args.usernames.split(',')
+    # get a usernames array, even from the parameter or the file
+    usernames = get_usernames()
 
-        if not usernames:
-            print('Define one or more usernames using -u or -f.\nCheck the help dialog for more options.')
-            sys.exit(1)
-
-        for username in usernames:
-            if not args.dump:
-                filename = '{}_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
-                file_output = open(filename, 'a')
-                file_output.write('~#~'.join(csv_columns) + '\n')
-            else:
-                print('~#~'.join(csv_columns))
-
-            current_page = 0
-            exported_comments_count = 0
-            run(username, None)
-            time.sleep(random.randint(1, 5))
-
-            if not args.dump:
-                file_output.close()
-                print('{}: {} comments exported.'.format(filename, exported_comments_count))
-    except json.decoder.JSONDecodeError as ex:
-        print('ERROR: Cannot decode data - {}. HTTP response: \"{}\"'.format(str(ex), response_json.text[0:70]))
+    if not usernames:
+        print('Define one or more usernames using -u or -f.\nCheck the help dialog for more options.')
         sys.exit(1)
+
+    for username in usernames:
+        current_page = 0
+        exported_comments_count = 0
+
+        if not args.dump:
+            filename = '{}_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
+            file_output = open(filename, 'a')
+            file_output.write('~#~'.join(csv_columns) + '\n')
+
+            run(username, None)
+
+            file_output.close()
+            print('{}: {} comments exported.'.format(filename, exported_comments_count))
+        else:
+            print('~#~'.join(csv_columns))
+            run(username, None)
+            print('')
 
     sys.exit(0)
 
