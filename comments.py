@@ -41,7 +41,7 @@ def parse_comments(data):
         if args.sub_filter is not None and args.sub_filter != comment['subreddit']:
             continue
 
-        # remove the content type id
+        # remove the content type
         post_id = comment['link_id'].split('_')[1]
         date_created = datetime.fromtimestamp(comment['created']).strftime('%Y-%m-%d %H:%M:%S')
         body = html.unescape(comment['body'].replace('\n', '\\n'))
@@ -67,7 +67,7 @@ def run(username, page):
             file_output.write('{}\n'.format('~#~'.join(comment)))
             continue
 
-        print('~#~'.join(result))
+        print('~#~'.join(comment))
 
     current_page += 1
     next_page = data['after']
