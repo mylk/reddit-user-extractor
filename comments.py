@@ -114,7 +114,7 @@ if __name__ == '__main__':
         exported_comments_count = 0
 
         if not args.dump:
-            filename = '{}_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
+            filename = '{}_comments_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
             file_output = open(filename, 'a')
             file_output.write('~#~'.join(csv_columns) + '\n')
 
