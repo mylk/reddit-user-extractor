@@ -109,6 +109,9 @@ if __name__ == '__main__':
         print('Define one or more usernames using -u or -f.\nCheck the help dialog for more options.')
         sys.exit(1)
 
+    if args.dump:
+        print('~#~'.join(csv_columns))
+
     for username in usernames:
         current_page = 0
         exported_comments_count = 0
@@ -123,9 +126,7 @@ if __name__ == '__main__':
             file_output.close()
             print('{}: {} comments exported.'.format(filename, exported_comments_count))
         else:
-            print('~#~'.join(csv_columns))
             run(username, None)
-            print('')
 
     sys.exit(0)
 
