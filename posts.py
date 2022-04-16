@@ -48,7 +48,7 @@ def parse_data(data):
         post_id = post['name'].split('_')[1]
         date_created = datetime.fromtimestamp(post['created']).strftime('%Y-%m-%d %H:%M:%S')
         body = html.unescape(post['selftext'].replace('\n', '\\n'))
-        posts.append([post_id, post['title'], post['subreddit'], str(post['link_flair_text']), date_created, post['url'], body])
+        posts.append([post_id, post['author'], post['title'], post['subreddit'], str(post['link_flair_text']), date_created, post['url'], body])
 
     return posts
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
     args = parser.parse_args()
 
-    csv_columns = ['id', 'title', 'subreddit', 'flair', 'date_created', 'url', 'body']
+    csv_columns = ['id', 'username', 'title', 'subreddit', 'flair', 'date_created', 'url', 'body']
 
     # get a usernames array, even from the parameter or the file
     usernames = get_usernames()

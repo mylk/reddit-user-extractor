@@ -45,7 +45,7 @@ def parse_comments(data):
         post_id = comment['link_id'].split('_')[1]
         date_created = datetime.fromtimestamp(comment['created']).strftime('%Y-%m-%d %H:%M:%S')
         body = html.unescape(comment['body'].replace('\n', '\\n'))
-        comments.append([comment['id'], post_id, comment['link_title'], comment['subreddit'], date_created, body])
+        comments.append([comment['id'], comment['author'], post_id, comment['link_title'], comment['subreddit'], date_created, body])
 
     return comments
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
     args = parser.parse_args()
 
-    csv_columns = ['comment_id', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
+    csv_columns = ['comment_id', 'username', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
 
     # get a usernames array, even from the parameter or the file
     usernames = get_usernames()
