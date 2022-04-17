@@ -51,14 +51,15 @@ There is a header line in the CSV file, but you can take a glimpse here too:
 Both commands accept the following options:
 
 ```
--u, --usernames        set the username(s) to extract their data.
-                       separate with comma for multiple values.
--f, --usernames-file   a file that contains the user(s) to extract. Each username has to be in a new line.
+-u, --usernames        the user(s) to extract the data.
+                       separate with commas for multiple values.
+-f, --usernames-file   a file that contains the user(s) to extract the data.
+                       each value has to be in a new line.
 -s, --sub-filter       filter user's data to specific subreddit (optional).
 -p, --page-limit       number of pages to examine (optional).
                        for comments, it's 25 comments per page, so setting this to 1 will extact the last 25 comments.
                        for posts, it will look-up the first X pages of data for posts.
--d, --dump             dump to standard output, not to a CSV file. (optional).
+-d, --dump             dump to standard output (optional).
 -h, --help             show the help message and exit.
 ```
 
