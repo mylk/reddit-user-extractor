@@ -38,7 +38,7 @@ def parse_comments(data):
     for comment in data['children']:
         comment = comment['data']
 
-        if args.sub_filter is not None and args.sub_filter != comment['subreddit']:
+        if args.sub_filter is not None and comment['subreddit'] not in args.sub_filter.split(','):
             continue
 
         # remove the content type
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--usernames', type=str, help='The user(s) to extract the data. Separate with commas for multiple values.')
     parser.add_argument('-f', '--usernames-file', type=str, help='A file that contains the user(s) to extract the data. Each value has to be in a new line.')
-    parser.add_argument('-s', '--sub-filter', type=str, help='Filter user\'s data to specific subreddit.')
+    parser.add_argument('-s', '--sub-filter', type=str, help='Filter user\'s data to specific subreddits. Separate with commas for multiple values.')
     parser.add_argument('-p', '--page-limit', type=int, help='The number of pages to examine.')
     parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
     args = parser.parse_args()
