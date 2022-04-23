@@ -1,38 +1,17 @@
 #!/usr/bin/env python
 
-import argparse
 from datetime import datetime
 import html
-import json
-import os
 import random
-import requests
 import sys
 import time
 
+import common
+
 current_page = 0
-exported_comments_count = 0
+exported_count = 0
 
-def get_comments(username, page):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-        'Accept-Encoding': 'gzip'
-    }
-    params = {}
-
-    # set parameter to go to specific page of comments
-    if page:
-        params['after'] = page
-
-    response = requests.get('https://www.reddit.com/user/{}/comments/.json'.format(username), params=params, headers=headers)
-
-    try:
-        return json.loads(response.text)
-    except json.decoder.JSONDecodeError as ex:
-        print('ERROR: Cannot decode data - {}. HTTP response: \"{}\"'.format(str(ex), response.text[0:70]))
-        return []
-
-def parse_comments(data):
+def parse_data(data):
     comments = []
 
     for comment in data['children']:
@@ -51,19 +30,19 @@ def parse_comments(data):
 
 def run(username, page):
     global current_page
-    global exported_comments_count
+    global exported_count
 
-    response = get_comments(username, page)
+    response = common.get_data(common.URL_COMMENTS, username, page)
 
     # exit if no comments in page
     data = response['data'] if 'data' in response else None
     if data is None:
         return
 
-    comments = parse_comments(data)
+    comments = parse_data(data)
     for comment in comments:
         if not args.dump:
-            exported_comments_count += 1
+            exported_count += 1
             file_output.write('{}\n'.format('~#~'.join(comment)))
             continue
 
@@ -79,31 +58,13 @@ def run(username, page):
         # recurse for the next page
         run(username, next_page)
 
-def get_usernames():
-    usernames = []
-
-    if args.usernames_file and os.path.isfile(args.usernames_file):
-        with open(args.usernames_file, 'r') as usernames_file:
-            usernames = usernames_file.read().splitlines()
-            usernames_file.close()
-    elif args.usernames:
-        usernames = args.usernames.split(',')
-
-    return usernames
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--usernames', type=str, help='The user(s) to extract the data. Separate with commas for multiple values.')
-    parser.add_argument('-f', '--usernames-file', type=str, help='A file that contains the user(s) to extract the data. Each value has to be in a new line.')
-    parser.add_argument('-s', '--sub-filter', type=str, help='Filter user\'s data to specific subreddits. Separate with commas for multiple values.')
-    parser.add_argument('-p', '--page-limit', type=int, help='The number of pages to examine.')
-    parser.add_argument('-d', '--dump', action='store_true', help='Dump to standard output.')
-    args = parser.parse_args()
+    args = common.setup_arguments()
 
     csv_columns = ['comment_id', 'username', 'post_id', 'post_title', 'subreddit', 'date_created', 'body']
 
     # get a usernames array, even from the parameter or the file
-    usernames = get_usernames()
+    usernames = common.get_usernames(args)
 
     if not usernames:
         print('Define one or more usernames using -u or -f.\nCheck the help dialog for more options.')
@@ -114,7 +75,7 @@ if __name__ == '__main__':
 
     for username in usernames:
         current_page = 0
-        exported_comments_count = 0
+        exported_count = 0
 
         if not args.dump:
             filename = '{}_comments_{}.csv'.format(username, datetime.today().strftime('%Y%m%d_%H%M%S'))
@@ -124,7 +85,7 @@ if __name__ == '__main__':
             run(username, None)
 
             file_output.close()
-            print('{}: {} comments exported.'.format(filename, exported_comments_count))
+            print('{}: {} comments exported.'.format(filename, exported_count))
         else:
             run(username, None)
 
